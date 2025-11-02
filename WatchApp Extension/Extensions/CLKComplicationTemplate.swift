@@ -87,7 +87,7 @@ extension CLKComplicationTemplate {
 
         // --- Add IOB safely ---
         var iobString = ""
-        if let iobValue = ExtensionDelegate.shared().loopManager.activeContext?.iob {
+        if let iobValue = ExtensionDelegate.shared().loopManager.activeContext?.iob?.value {
             iobString = String(format: "IOB %.1fU", iobValue)
         }
 
