@@ -48,8 +48,8 @@ extension CLKComplicationTemplate {
             trendString = trend?.symbol ?? " "
         }
 
+        // --- Determine color freshness ---
         let loopCompletionFreshness = LoopCompletionFreshness(lastCompletion: loopLastRunDate, at: date)
-
         let tintColor: UIColor
         switch loopCompletionFreshness {
         case .fresh: tintColor = .tintColor
@@ -59,33 +59,37 @@ extension CLKComplicationTemplate {
 
         // --- Add IOB safely ---
         var iobString = ""
-        if let iobValue = LoopDataManager.shared?.activeContext?.iob?.iobTotal ?? LoopDataManager.shared?.activeContext?.iob?.value {
+        if let iobValue = ExtensionDelegate.shared().loopManager.activeContext?.iob {
             iobString = String(format: "IOB %.1fU", iobValue)
         }
 
-        // Time since last run (e.g., 4MIN)
+        // --- Time since last run (e.g., 4MIN) ---
         var timePlain = ""
         if let loopDate = loopLastRunDate {
             let mins = max(0, Int(date.timeIntervalSince(loopDate) / 60))
             timePlain = "\(mins)MIN"
         }
 
-        // Build the full text, e.g. “10.6→4MIN  IOB 6.8U”
+        // --- Build the full text, e.g. “10.6→4MIN  IOB 6.8U” ---
         var displayText = "\(glucoseString)\(trendString)"
         if !timePlain.isEmpty { displayText += "→\(timePlain)" }
         if !iobString.isEmpty { displayText += "  \(iobString)" }
 
         let glucoseAndTrendText = CLKSimpleTextProvider(text: displayText)
+        glucoseAndTrendText.tintColor = tintColor
 
         // --- Complication family layouts ---
         switch family {
+
         case .graphicRectangular:
             if #available(watchOSApplicationExtension 5.0, *) {
                 return CLKComplicationTemplateGraphicRectangularLargeImage(
                     textProvider: CLKSimpleTextProvider(text: displayText),
-                    imageProvider: CLKFullColorImageProvider(fullColorImage: makeChart())
+                    imageProvider: CLKFullColorImageProvider(fullColorImage: makeChart() ?? UIImage())
                 )
-            } else { return nil }
+            } else {
+                return nil
+            }
 
         case .utilitarianLarge:
             return CLKComplicationTemplateUtilitarianLargeFlat(
