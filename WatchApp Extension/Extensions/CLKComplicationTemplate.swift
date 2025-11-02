@@ -13,6 +13,34 @@ import UIKit
 
 extension CLKComplicationTemplate {
 
+    // MARK: - Compatibility Wrapper for ComplicationController
+    static func templateForFamily(
+        _ family: CLKComplicationFamily,
+        from context: WatchContext,
+        at date: Date,
+        recencyInterval: TimeInterval,
+        chartGenerator makeChart: () -> UIImage?
+    ) -> CLKComplicationTemplate? {
+        guard let glucose = context.glucose,
+              let unit = context.displayGlucoseUnit else {
+            return nil
+        }
+
+        return templateForFamily(
+            family,
+            glucose: glucose,
+            unit: unit,
+            glucoseDate: context.glucoseDate,
+            trend: context.glucoseTrend,
+            eventualGlucose: context.eventualGlucose,
+            at: date,
+            loopLastRunDate: context.loopLastRunDate,
+            recencyInterval: recencyInterval,
+            chartGenerator: makeChart
+        )
+    }
+
+    // MARK: - Main Template Generator with IOB Display
     static func templateForFamily(
         _ family: CLKComplicationFamily,
         glucose: HKQuantity,
